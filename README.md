@@ -1,6 +1,7 @@
 # k9
 
 **Copyright 2019 Nicole Collings**
+
 [Official Discord Server](https://discord.gg/sT7APUG)
 
 k9 is a minimalist level tracker bot for discord, used in Auri's Den. It tracks user's post frequency in a persistent database, assigning XP to posts which contributes to a total user level. The user level is used to apply custom roles to active users.
