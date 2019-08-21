@@ -4,11 +4,9 @@
 [![Discord Badge](https://img.shields.io/discord/416379773976051712.svg?color=7289DA&label=discord&logo=discord&logoColor=white)](https://discord.gg/sT7APUG)
 [![GitHub Commit](https://img.shields.io/github/commit-activity/m/aurailus/k9.svg?logo=github&label=commit%20activity)](https://github.com/Aurailus/k9/commits/master)
 
-k9 is a minimalist level tracker bot for discord, used in Auri's Den. It tracks user's post frequency in a persistent database, assigning XP to posts which contributes to a total user level. The user level is used to apply custom roles to active users.
-
 **Copyright 2019 Nicole Collings**
 
-[Official Discord Server](https://discord.gg/sT7APUG)
+k9 is a minimalist level tracker bot for discord, used in Auri's Den. It tracks user's post frequency in a persistent database, assigning XP to posts which contributes to a total user level. The user level is used to apply custom roles to active users.
 
 ## Dependencies
 * NodeJS 6+
