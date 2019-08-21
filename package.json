@@ -1,0 +1,18 @@
+{
+  "name": "k9",
+  "version": "0.0.1",
+  "description": "A simple discord bot for tracking user levels.",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nicole Collings (Aurailus)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bufferutil": "^4.0.1",
+    "discord.js": "^11.5.1",
+    "jimp": "^0.6.4",
+    "lowdb": "^1.0.0"
+  }
+}

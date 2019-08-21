@@ -1,3 +1,7 @@
+# Data folder & out folder
+out/
+data/
+
 # Logs
 logs
 *.log
