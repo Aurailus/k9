@@ -1,3 +1,5 @@
+const Discord = require("discord.js");
+
 class Commands {
 	constructor(discord, self) {
 		this.discord = discord;
@@ -53,7 +55,30 @@ I also have a few simple commands that can be used in any server I'm in:
 
 	registerLeaderboard() {
 		this.registerCommand("leaderboard", msg => {
-			msg.author.send(`**Leaderboard not implemented _yet_.**`);
+			let users = this.self.db.get('servers').find({id: msg.guild.id}).get('users').sortBy('totalXP').reverse().take(9).value();
+
+			const embed = new Discord.RichEmbed()
+			  .setAuthor("Leaderboard", "https://i.imgur.com/LaPvO6n.png")
+			  .setColor("#FFAC38")
+			  .setDescription("The most active members on the server.")
+			  .setFooter(`Requested by ${msg.member.displayName}`, msg.author.avatarURL)
+			  .setTimestamp()
+
+				.addBlankField()
+
+		  for (let i = 0; i < users.length; i++) {
+		  	const user = msg.guild.members.get(users[i].id);
+		  	let name = "Removed";
+		  	if (user) name = user.displayName;
+		  	if (name.length >= 20) name = name.substr(0, 18) + "...";
+		  	embed.addField(
+		  		`⠀${i < 3 ? "**" : ""}${i + 1}) ${name}${i < 3 ? "**" : ""}`, 
+		  		`⠀Level ${users[i].level} • ${users[i].totalXP} XP`, true);
+		  }
+			
+			embed.addBlankField()
+			 
+		  msg.channel.send({embed});
 		});
 	}
 }

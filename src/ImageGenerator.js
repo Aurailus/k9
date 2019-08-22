@@ -6,9 +6,9 @@ class ImageGenerator {
 
   }
 
-  generate(name, level) {
+  generate(name, level, filename) {
     return new Promise((resolve, regect) => {
-      let imgExported = `out/levelup_${name}_${level}.png`;
+      let imgExported = `out/${filename}.png`;
 
       let nameData = {
         text: name,

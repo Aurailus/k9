@@ -14,7 +14,7 @@ class Leveller {
 		let auth = msg.author.id;
 
 		// Ignore the bot itself, and only count messages that are 3+ characters
-		if (auth == 613569990297255938 || msg.content.length < 3 || msg.content.substr(0, 3) == "k9 ") return;
+		if (auth == 613569990297255938 || (msg.content.length > 0 && msg.content.length < 3) || msg.content.substr(0, 3) == "k9 ") return;
 	
 		//Make sure the user is in a Server
 		const guild = msg.guild;
@@ -48,12 +48,28 @@ class Leveller {
 		}
 
 		user.messages++;
+		let xp = Math.round(Math.random() * 2 + 1);
+		let thanked = false;
+
+		if (msg.content.toLowerCase().substr(0, 8) == "good dog") {
+			msg.channel.fetchMessages({ limit: 2 }).then(messages => {
+  			let lastMsg = messages.last();
+				if (lastMsg.author.id == 613569990297255938 && lastMsg.attachments.first()) {
+	  			let filename = lastMsg.attachments.first().filename;
+	  			let user = filename.substr(0, filename.length - 4);
+
+	  			if (user == auth) {
+	  				msg.reply("woof! (extra XP rewarded.)");
+						xp += Math.round(Math.random() * 10 + 4);
+						thanked = true;
+	  			}
+	  		}
+			});
+		}
 
 		//Only count messages every 10 seconds
-		if (time - user.lastPosted >= 10 * 1000) {
+		if (time - user.lastPosted >= 10 * 1000 || thanked) {
 			user.lastPosted = time;
-
-			const xp = Math.round(Math.random() * 2 + 1);
 
 			user.levelXP += xp;
 			user.totalXP += xp;
@@ -65,7 +81,7 @@ class Leveller {
 				user.levelXP -= Math.round(cost);
 				// msg.channel.send(`Congratulations <@${auth}>, you're now level **${user.level}**! <:pickaxe:606019109284610078>`);
 
-				imgExp.generate(msg.member.displayName, user.level).then(image => {
+				imgExp.generate(msg.member.displayName, user.level, auth).then(image => {
 					msg.channel.send("", {file: image}).then(() => {
 						fs.unlinkSync(image);
 					});
