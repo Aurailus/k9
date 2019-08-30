@@ -13,8 +13,10 @@ class Leveller {
 	message_recvd(msg) {
 		let auth = msg.author.id;
 
-		// Ignore the bot itself, and only count messages that are 3+ characters
-		if (auth == 613569990297255938 || (msg.content.length > 0 && msg.content.length < 3) || msg.content.substr(0, 3) == "k9 ") return;
+		//Ignore the bot
+		if (auth == 613569990297255938) return;
+		// Basic Screening
+		if (msg.content.length < 6 || msg.content.split(" ").length - 1 < 1 || msg.content.substr(0, 3) == "k9 ") return;
 	
 		//Make sure the user is in a Server
 		const guild = msg.guild;
@@ -38,7 +40,8 @@ class Leveller {
 			user = {
 				id: auth,
 				user: msg.author.tag, 
-				lastPosted: Date.now() - 60 * 1000, 
+				lastPosted: Date.now() - 60 * 1000,
+				lastInstigated: Date.now() - 60 * 1000, 
 				level: 0,
 				levelXP: 0,
 				totalXP: 0,
@@ -48,7 +51,7 @@ class Leveller {
 		}
 
 		user.messages++;
-		let xp = Math.round(Math.random() * 2 + 1);
+		let xp = Math.round((Math.random() + Math.min(msg.content.length / 50), 1.5) * 10) / 10;
 		let thanked = false;
 
 		if (msg.content.toLowerCase().substr(0, 8) == "good dog") {
@@ -59,7 +62,7 @@ class Leveller {
 	  			let user = filename.substr(0, filename.length - 4);
 
 	  			if (user == auth) {
-	  				msg.reply("woof! (extra XP rewarded.)");
+	  				msg.reply("woof!");
 						xp += Math.round(Math.random() * 10 + 4);
 						thanked = true;
 	  			}
@@ -67,19 +70,26 @@ class Leveller {
 			});
 		}
 
-		//Only count messages every 10 seconds
-		if (time - user.lastPosted >= 10 * 1000 || thanked) {
+		//Ignore first message
+		if (!thanked && (!user.lastInstigated || time - user.lastInstigated >= 300 * 1000)) {
+			user.lastInstigated = time;
+			this.self.db.write();
+			return;
+		}
+
+		//Only count messages every 15 seconds
+		if (thanked || (time - user.lastPosted >= 15 * 1000)) {
 			user.lastPosted = time;
+			user.lastInstigated = time;
 
 			user.levelXP += xp;
 			user.totalXP += xp;
 
-			const cost = (this.self.xp_properties.level_base_cost + user.level * (1 + this.self.xp_properties.level_multiplier));
+			const cost = (this.self.xp_properties.level_base_cost + user.level ^ this.self.xp_properties.level_multiplier);
 
 			if (user.levelXP >= cost) {
 				user.level++;
-				user.levelXP -= Math.round(cost);
-				// msg.channel.send(`Congratulations <@${auth}>, you're now level **${user.level}**! <:pickaxe:606019109284610078>`);
+				user.levelXP -= cost;
 
 				imgExp.generate(msg.member.displayName, user.level, auth).then(image => {
 					msg.channel.send("", {file: image}).then(() => {

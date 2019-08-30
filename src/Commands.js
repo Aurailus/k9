@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const haystack = new (require("./HaystackIntegration.js"));
 
 class Commands {
 	constructor(discord, self) {
@@ -7,7 +8,9 @@ class Commands {
 
 		this.registerHelp();
 		this.registerLevel();
+		this.registerHaystack();
 		this.registerLeaderboard();
+		this.registerAnnouncement();
 	}
 
 	registerCommand(prefix, command) {
@@ -21,17 +24,28 @@ class Commands {
 
 	registerHelp() {
 		this.registerCommand("help", msg => {
-			msg.author.send(`
-**Hello!**
-I'm a simple score counting and moderation bot made for Auri's Den by Aurailus.
-I assign levels to users based on the frequency of their contributions to the server, 
-and automagically give them ranks as their level raises.
-I also have a few simple commands that can be used in any server I'm in:
 
-**Commands:**
-\`k9 help\` - *Sends this message.*
-\`k9 level\` - *Shows you your current level, rank, and XP.*
-\`k9 leaderboard\` - *Shows the top users in Auri's Den.*`);
+			const embed = new Discord.RichEmbed()
+			  .setAuthor("K9 Help", "https://cdn.discordapp.com/avatars/613569990297255938/13a0f7a3818feaa9cbc173f54b30eb9c.png?size=128")
+			  .setColor("#EE86ED")
+			  .setDescription(
+			  	`Hi, I'm k9! I'm a user level tracking bot made by Aurailus#4014. ` +
+			  	`I assign users levels and automagically grants users roles once they reach certain level thresholds. ` +
+			  	`I also have a few simple commands available to interact with me.`)
+			  .setFooter(`Requested by ${msg.member.displayName}`, msg.author.avatarURL)
+			  .setTimestamp()
+
+			  .addField("⠀`k9 help`", `⠀Sends this message.`)
+			  .addField("⠀`k9 level`", `⠀Displays your level, XP, and rank.`)
+			  .addField("⠀`k9 leaderboard`", `⠀Shows the top ranked users in the current server.`)
+
+		  msg.channel.send({embed});
+		});
+	}
+
+	registerHaystack() {
+		this.registerCommand("haystack", msg => {
+			haystack.parse(msg);
 		});
 	}
 
@@ -49,7 +63,30 @@ I also have a few simple commands that can be used in any server I'm in:
 			let user = db.get('users').find({id: auth}).value();
 			if (!user) return;
 
-			msg.channel.send(`You're level **${user.level}**, <@${auth}>! <:pickaxe:606019109284610078>`);
+			const cost = (this.self.xp_properties.level_base_cost + user.level * (1 + this.self.xp_properties.level_multiplier));
+
+			let currentRole = -1;
+
+			const roles = db.get('levelRoles').value();
+			for (let role in roles) {
+				let num = parseInt(role);
+				if (num <= user.level && num > currentRole) currentRole = num;
+			}
+
+			let role = (currentRole == -1) ? "Potato" : msg.guild.roles.find(r => r.id == roles[currentRole]).name;
+
+			const embed = new Discord.RichEmbed()
+			  .setAuthor("My Level", "https://i.imgur.com/Nqyb94h.png")
+			  .setColor("#15B5A6")
+			  .setDescription(`Statistics for ${msg.member.displayName} in ${msg.guild.name}.`)
+			  .setFooter(`Requested by ${msg.member.displayName}`, msg.author.avatarURL)
+			  .setTimestamp()
+
+			  .addField(`⠀Level`, `⠀${user.level}`, true)
+			  .addField(`⠀XP`, 		`⠀${Math.floor(user.levelXP)} / ${Math.ceil(cost)}`, true)
+			  .addField(`⠀Rank`, 	`⠀${role}`, true)
+
+		  msg.channel.send({embed});
 		});
 	}
 
@@ -60,7 +97,7 @@ I also have a few simple commands that can be used in any server I'm in:
 			const embed = new Discord.RichEmbed()
 			  .setAuthor("Leaderboard", "https://i.imgur.com/LaPvO6n.png")
 			  .setColor("#FFAC38")
-			  .setDescription("The most active members on the server.")
+			  .setDescription(`The most active members in ${msg.guild.name}.`)
 			  .setFooter(`Requested by ${msg.member.displayName}`, msg.author.avatarURL)
 			  .setTimestamp()
 
@@ -73,11 +110,25 @@ I also have a few simple commands that can be used in any server I'm in:
 		  	if (name.length >= 20) name = name.substr(0, 18) + "...";
 		  	embed.addField(
 		  		`⠀${i < 3 ? "**" : ""}${i + 1}) ${name}${i < 3 ? "**" : ""}`, 
-		  		`⠀Level ${users[i].level} • ${users[i].totalXP} XP`, true);
+		  		`⠀Level ${users[i].level} • ${Math.floor(users[i].totalXP)} XP`, true);
 		  }
 			
 			embed.addBlankField()
 			 
+		  msg.channel.send({embed});
+		});
+	}
+
+	registerAnnouncement() {
+		this.registerCommand("announce", msg => {
+
+			const embed = new Discord.RichEmbed()
+			  .setAuthor("Auri's Den", "https://cdn.discordapp.com/avatars/613569990297255938/13a0f7a3818feaa9cbc173f54b30eb9c.png?size=128")
+			  .setColor("#EE86ED")
+			  .setDescription(msg.content)
+			  .setFooter(`Posted by ${msg.member.displayName}`, msg.author.avatarURL)
+			  .setTimestamp()
+
 		  msg.channel.send({embed});
 		});
 	}
