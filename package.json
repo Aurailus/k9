@@ -2,17 +2,26 @@
   "name": "k9",
   "version": "0.0.1",
   "description": "A simple discord bot for tracking user levels.",
-  "main": "main.js",
+  "main": "build/Main.js",
   "scripts": {
-    "start": "node main.js",
+    "start": "node ./build/Main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Nicole Collings (Aurailus)",
   "license": "UNLICENSED",
   "dependencies": {
+    "@types/node": "^12.7.3",
+    "ansi-colors": "^4.1.1",
     "bufferutil": "^4.0.1",
     "discord.js": "^11.5.1",
+    "file-api": "^0.10.4",
+    "filereader": "^0.10.3",
+    "form-data": "^2.5.0",
+    "image-to-base64": "^2.0.1",
     "jimp": "^0.6.4",
-    "lowdb": "^1.0.0"
+    "lowdb": "^1.0.0",
+    "request": "^2.88.0",
+    "tsc": "^1.20150623.0",
+    "xmlhttprequest": "^1.8.0"
   }
 }

@@ -1,6 +1,7 @@
 # Data folder & out folder
 out/
 data/
+build/
 
 # Logs
 logs
@@ -8,6 +9,9 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+src/@types/
+build/
 
 # Runtime data
 pids
