@@ -31,7 +31,7 @@ export class Haystack extends Command {
 		  .setAuthor("Haystack", "https://i.imgur.com/pPObkMW.png")
 		  .setColor("#7189D8")
 		  .setDescription(`Preparing...`)
-		  .setFooter(`Requested by ${msg.member.displayName}`, msg.author.avatarURL)
+		  .setFooter(`Requested by ${(msg.member) ? msg.member.displayName : msg.author.username}`, msg.author.avatarURL)
 		  .setTimestamp();
 
 		msg.channel.send(embed).then(newMsg => {
@@ -64,7 +64,7 @@ export class Haystack extends Command {
 					  .setAuthor("Haystack", "https://i.imgur.com/pPObkMW.png")
 					  .setColor("#7189D8")
 					  .setDescription(`Processing Image...`)
-					  .setFooter(`Requested by ${msg.member.displayName}`, msg.author.avatarURL)
+					  .setFooter(`Requested by ${(msg.member) ? msg.member.displayName : msg.author.username}`, msg.author.avatarURL)
 					  .setTimestamp();
 
 				  (newMsg as any as Discord.Message).edit(newEmbed);
@@ -104,8 +104,6 @@ export class Haystack extends Command {
 					  	newEmbed.setImage(imageUrl);
 
 						  (newMsg as any as Discord.Message).edit(newEmbed).then(() => super.deleteTrigger(msg));
-
-						  console.log(json);
 						}
 						else {
 							errEmbed.setDescription(`[${response.statusCode}] ${body}`);

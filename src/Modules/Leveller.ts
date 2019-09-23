@@ -1,16 +1,21 @@
+const fs = require('fs');
+
 import * as Discord from 'discord.js';
 
 import {BotStorage} from "../BotStorage";
-import {GuildData} from "../GuildData"
+import {GuildData} from "../GuildData";
+import {LevelImageBuilder} from "./LevelImageBuilder"
 import {BotLevelRoles, Database, DBServer, DBUser} from "../Database";
 
 export class Leveller {
 	client: Discord.Client;
 	storage: BotStorage;
+	imgBuilder: LevelImageBuilder;
 
 	constructor(client: Discord.Client, storage: BotStorage) {
 		this.client = client;
 		this.storage = storage;
+		this.imgBuilder = new LevelImageBuilder();
 
 		client.on("message", (msg) => this.onMessage(msg));
 	}
@@ -32,13 +37,19 @@ export class Leveller {
 
 		const guild =	this.storage.getGuild(msg.guild);
 
+		for (let voice in guild.voiceTextChannels) {
+			if (guild.voiceTextChannels[voice].id == msg.channel.id) {
+				return;
+			}
+		}
+
 		let server: DBServer = this.storage.db.getServer(msg.guild);
 		let user: DBUser = server.getUser(msg.member);
 
 		const time = Date.now();
 		user.messages++;
 
-		let xp = Math.round(Math.random() + Math.min(msg.content.length / 100, 1.5) * 100) / 100;
+		let xp = Math.round(Math.random() + Math.min(msg.content.length / 70, 3.0) * 100) / 100;
 		let thankedTheDog = false;
 
 		if (msg.content.toLowerCase().substr(0, 8) == "good dog") {
@@ -61,12 +72,15 @@ export class Leveller {
 		// Ignore the first message in a while to prevent single spam messages gaining XP
 		if (!thankedTheDog && (!user.lastInstigated || time - user.lastInstigated >= 300 * 1000)) {
 			user.lastInstigated = time;
-			server.pushUser(user);
-			return;
+			//Don't score the message if it is less than 30 chars long (a "useless" message)
+			if (msg.content.length < 30) {
+				server.pushUser(user);
+				return;
+			}
 		}
 
-		// Only count messages every 15 seconds
-		if (thankedTheDog || (time - user.lastPosted >= 15 * 1000)) {
+		// Only count messages every 30 seconds
+		if (thankedTheDog || (time - user.lastPosted >= 30 * 1000)) {
 			user.lastPosted = time;
 			user.lastInstigated = time;
 
@@ -79,11 +93,11 @@ export class Leveller {
 				user.level++;
 				user.levelXP -= cost;
 
-				// imgExp.generate(msg.member.displayName, user.level, auth).then(image => {
-				// 	msg.channel.send("", {file: image}).then(() => {
-				// 		fs.unlinkSync(image);
-				// 	});
-				// });
+				this.imgBuilder.generate(msg.member.displayName, user.level, msg.author.id).then(image => {
+					msg.channel.send("", {file: image as any}).then(() => {
+						fs.unlinkSync(image);
+					});
+				});
 
 				let currentRole = -1;
 				let previousRole = -1;
