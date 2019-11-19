@@ -20,6 +20,8 @@ export class VoiceTextChannels {
 	voiceStateUpdate(oldMember: Discord.GuildMember, member: Discord.GuildMember): void {		
 		let guild: GuildData = this.storage.getGuild(member.guild);
 
+		if (member.voiceChannel == oldMember.voiceChannel) return;
+
 		if (member.voiceChannel && member.voiceChannel.parent) {
 			if (member.voiceChannel.members.size == 1) {
 				let link = `**https://discordapp.com/channels/${member.guild.id}/${member.voiceChannelID}**`
