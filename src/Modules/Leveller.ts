@@ -42,7 +42,7 @@ export class Leveller {
 							let server: DBServer = this.storage.db.getServer(guild.guild);
 							let user: DBUser = server.getUser(member);
 
-							let xp = Math.round(Math.random() * 3 + 3);
+							let xp = Math.round(Math.random() * 2 + 1);
 
 							user.levelXP += xp;
 							user.totalXP += xp;
