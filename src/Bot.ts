@@ -10,7 +10,7 @@ import {BotStorage} from "./BotStorage";
 import {Database} from "./Database";
 
 import {Command} from "./Commands/Command";
-import {VoiceTextChannels} from "./Modules/VoiceTextChannels";
+import {ChatChannels} from "./Modules/ChatChannels";
 import {Leveller} from "./Modules/Leveller";
 
 import {Help} from "./Commands/Help";
@@ -23,7 +23,7 @@ export class Bot {
 	client: Discord.Client;
 	storage: BotStorage;
 
-	voiceTextChannels: VoiceTextChannels;
+	chatChannels: ChatChannels;
 	leveller: Leveller;
 
 	commands: Command[] = [];
@@ -66,7 +66,7 @@ export class Bot {
 	bindFunctions(): Promise<Bot> {
 		return new Promise((resolve, reject) => {
 			try {
-				this.voiceTextChannels = new VoiceTextChannels(this.client, this.storage);
+				this.chatChannels = new ChatChannels(this.client, this.storage);
 				this.leveller = new Leveller(this.client, this.storage);
 
 				this.commands.push(new Help(this.client, this.storage));
@@ -80,17 +80,15 @@ export class Bot {
 		});
 	}
 
-	shutDown(): number {
+	async shutDown() {
 		try {
-			this.voiceTextChannels.cleanup();
-			this.leveller.cleanup();
+			await this.chatChannels.cleanup();
+			await this.leveller.cleanup();
 
 			console.log(`Shut down gracefully.`);
-			return 0;
 		}
 		catch (e) {
 			getFatalCallback("Shutdown")(e);
-			return 1;
 		}
 	}
 }

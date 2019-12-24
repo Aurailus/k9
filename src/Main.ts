@@ -28,8 +28,8 @@ function start() {
 	}).then((bot: Bot) => {
 		return bot.bindFunctions();
 	}).then((bot: Bot) => {
-		process.on('SIGINT', () => {
-			bot.shutDown();
+		process.on('SIGINT', async () => {
+			await bot.shutDown();
 			process.exit();
 		});
 	}).catch(getFatalCallback("Main.ts"));
