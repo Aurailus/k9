@@ -42,7 +42,7 @@ export class Leveller {
 							let server: DBServer = this.storage.db.getServer(guild.guild);
 							let user: DBUser = server.getUser(member);
 
-							let xp = Math.round(Math.random() * 2 + 1);
+							let xp = Math.round(Math.random() + 0.3);
 
 							user.levelXP += xp;
 							user.totalXP += xp;
@@ -147,7 +147,7 @@ export class Leveller {
 
 		for (let voice in guild.chatChannels) {
 			if (guild.chatChannels[voice] == msg.channel.id) {
-				xp /= 2;
+				xp /= 3;
 			}
 		}
 
