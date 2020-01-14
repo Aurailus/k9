@@ -43,6 +43,7 @@ export class Bot {
 
 			this.client.on('ready', () => {
 				console.log(`Successfully connected as ${c.cyan(this.client.user.tag)}.`);
+				console.log(`Version 1.0.1`);
 				this.client.user.setActivity(this.config.playing_tag.message, {type: this.config.playing_tag.type});
 				this.client.user.setStatus('online');
 				resolve(this);
