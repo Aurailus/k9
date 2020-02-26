@@ -23,7 +23,6 @@ export class Haystack extends Command {
 			  .setTimestamp();
 
 			msg.channel.send(embed).catch((e) => {/*Missing permissions to send to channel*/});
-			super.deleteTrigger(msg);
 			return;
 		}
 
@@ -55,7 +54,6 @@ export class Haystack extends Command {
 				  errEmbed.setDescription(`There was an error getting the image: ${err}`);
 
 				  (newMsg as any as Discord.Message).edit(errEmbed);
-					super.deleteTrigger(msg);
 				  return;
 				}
 
@@ -70,13 +68,12 @@ export class Haystack extends Command {
 				  (newMsg as any as Discord.Message).edit(newEmbed);
 
 					requestPost.post({
-		  			url: "https://api.haystack.ai/api/image/analyze?output=json&apikey=bf31f70811df1dada7ae5135a431a537&model=age&model=gender&model=attractiveness", 
+		  			url: "https://api.haystack.ai/api/image/analyze?output=json&apikey=c91b373cc011946774767cf7220d7f64&model=age&model=gender&model=attractiveness", 
 		  			body: new Buffer(body)
 		  		}, (err, response, body) => {
 						if (err) {
 							errEmbed.setDescription(`There was an error processing the image: ${err}`);
 						  (newMsg as any as Discord.Message).edit(errEmbed);
-							super.deleteTrigger(msg);
 						  return;
 						}
 
@@ -102,13 +99,10 @@ export class Haystack extends Command {
 					  	newEmbed.addField("Gender", `${gender} (${Math.round(person.gender.confidence * 100)}%)`);
 					  	newEmbed.addField("Attractiveness", `${Math.round(person.attractiveness * 100) / 100} / 10`);
 					  	newEmbed.setImage(imageUrl);
-
-						  (newMsg as any as Discord.Message).edit(newEmbed).then(() => super.deleteTrigger(msg));
 						}
 						else {
 							errEmbed.setDescription(`[${response.statusCode}] ${body}`);
 						  (newMsg as any as Discord.Message).edit(errEmbed);
-							super.deleteTrigger(msg);
 						  return;
 						}
 					});

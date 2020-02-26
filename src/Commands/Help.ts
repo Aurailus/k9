@@ -23,6 +23,7 @@ export class Help extends Command {
 		  .addField("⠀`k9 help`", `⠀Sends this message.`)
 		  .addField("⠀`k9 level`", `⠀Displays your level, XP, and rank.`)
 		  .addField("⠀`k9 leaderboard`", `⠀Shows the top ranked users in the current server.`)
+		  .addField("⠀`k9 haystack`", `⠀Runs an attached image through haystack.ai to determine various statistics.`)
 
 	  msg.channel.send({embed}).catch((e) => {/*Missing send message permissions for the channel*/});
 	  super.deleteTrigger(msg);
