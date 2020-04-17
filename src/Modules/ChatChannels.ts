@@ -8,7 +8,7 @@ export class ChatChannels {
 	storage: BotStorage;
 
 	PREFIX = "**Temporary discussion for ";
-	SUFFIX = ".** Screen share link: "
+	SUFFIX = ".**"
 
 	constructor(client: Discord.Client, storage: BotStorage) {
 		this.client = client;
@@ -20,7 +20,7 @@ export class ChatChannels {
 			let guildData = this.storage.getGuild(guild);
 			guild.channels.forEach((channel, channelKey) => {
 				if (channel.type == "voice") {
-					if ((channel as Discord.VoiceChannel).members.size >= 1) {
+					if ((channel as Discord.VoiceChannel).members.size >= 1 && (channel as Discord.VoiceChannel).name != "afk") {
 						this.createChatChannel(channel as Discord.VoiceChannel, guildData);
 					}
 				}
@@ -52,12 +52,11 @@ export class ChatChannels {
 	}
 
 	createChatChannel(voiceChannel: Discord.VoiceChannel, guild: GuildData) {
-		let link = `https://discordapp.com/channels/${voiceChannel.guild.id}/${voiceChannel.id}`
 		let channelName = voiceChannel.name.replace(/[\W_]+/g,"-") + "-chat";
 
 		voiceChannel.guild.createChannel(channelName, {
 			type: `text`,
-			topic: `${this.PREFIX}<#${voiceChannel.id}>${this.SUFFIX}**${link}**`,
+			topic: `${this.PREFIX}<#${voiceChannel.id}>${this.SUFFIX}`,
 			parent: voiceChannel.parent
 		}).then((channel: Discord.TextChannel) => {
 			guild.chatChannels[voiceChannel.id] = channel.id;
@@ -67,8 +66,7 @@ export class ChatChannels {
 			  .setColor("#EE86ED")
 			  .setDescription(
 			  	`This is a temporary discussion channel for ${channelName}!\n` +
-			  	`This channel will be automatically deleted when everybody leaves the voice channel.\n` +
-			  	`[Group-chat-style screen share link.](${link})`)
+			  	`This channel will be automatically deleted when everybody leaves the voice channel.\n`)
 			  .setTimestamp()
 
 		  channel.send({embed}).catch((e) => {/*Missing send message permissions for the channel*/});
