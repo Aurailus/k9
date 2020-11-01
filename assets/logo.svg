@@ -43,7 +43,7 @@
        x2="839.56409"
        y2="851.40356"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.0265487,0,0,1.0265487,-13.169814,-14.769005)" />
+       gradientTransform="matrix(0.94178511,0,0,0.94178511,28.878265,32.384911)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -53,12 +53,12 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="197.08339"
-     inkscape:cy="508.01784"
+     inkscape:cx="755.29103"
+     inkscape:cy="480.86613"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
      showgrid="false"
-     inkscape:snap-bbox="true"
+     inkscape:snap-bbox="false"
      inkscape:bbox-nodes="true"
      inkscape:bbox-paths="true"
      inkscape:snap-bbox-edge-midpoints="true"
@@ -69,14 +69,18 @@
      inkscape:snap-smooth-nodes="true"
      inkscape:snap-midpoints="true"
      inkscape:snap-object-midpoints="true"
-     inkscape:snap-center="true"
+     inkscape:snap-center="false"
      inkscape:snap-text-baseline="true"
      inkscape:window-width="1920"
-     inkscape:window-height="1004"
+     inkscape:window-height="1006"
      inkscape:window-x="1920"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:snap-global="false" />
+     inkscape:snap-global="true"
+     inkscape:snap-nodes="false"
+     inkscape:snap-others="false"
+     inkscape:snap-grids="false"
+     inkscape:snap-page="true" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -94,22 +98,22 @@
      id="layer2"
      inkscape:label="Layer 2"
      transform="translate(0,-60.236221)">
-    <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:3.29999995;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4378"
-       width="1004.2857"
-       height="1014.2857"
-       x="-4.2857141"
-       y="52.362198" />
+    <ellipse
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:43.88290787;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path4190"
+       cx="496.09518"
+       cy="556.2373"
+       rx="471.00949"
+       ry="470.9613" />
     <circle
        style="opacity:1;fill:url(#linearGradient4376);fill-opacity:1;stroke:none;stroke-width:3.29999995;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path4301"
        cx="496.06299"
        cy="556.29919"
-       r="464.87991" />
+       r="426.49408" />
     <g
        id="g4303"
-       transform="matrix(1.1463992,0,0,1.1463992,56.57591,30.656835)">
+       transform="matrix(1.1299965,0,0,1.1299965,62.864087,74.420822)">
       <path
          inkscape:connector-curvature="0"
          id="path4148"
