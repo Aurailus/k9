@@ -1,38 +1,18 @@
-const fs = require('fs').promises;
-const c = require('ansi-colors');
+import { promises as fs } from 'fs';
 
-import * as Discord from 'discord.js';
+import log4js from 'log4js';
+import { parse } from 'toml';
+import Bot, { BotConfig } from "./Bot";
 
-import {BotConf} from "./BotConf";
-import {Bot} from "./Bot";
+const logger = log4js.getLogger();
+logger.level = 'debug';
 
-export function getFatalCallback(prefix: string, exit: boolean = true) {
-	return function(err: Error) {
-		console.error(c.bgRed.bold.white(`[${prefix}] A fatal error has occured:\n${err.toString()}.\n`));
-		if (exit) process.exit(0);
+(async () => {
+	try {
+		const conf = parse((await fs.readFile('./data/conf.toml')).toString()) as BotConfig;
+		await new Bot(conf).init();
 	}
-}
-
-function start() {
-	fs.access("./data").then(() => {
-		return fs.access("./data/conf.json");
-	}).then(() => {
-		return fs.readFile("./data/conf.json");
-	}).then((resp: Buffer) => {
-		try {
-			const conf: BotConf = JSON.parse(resp.toString());
-			let bot = new Bot(conf);
-			return bot.connect();
-		}
-		catch(e) { getFatalCallback("Conf Parsing")(e); }
-	}).then((bot: Bot) => {
-		return bot.bindFunctions();
-	}).then((bot: Bot) => {
-		process.on('SIGINT', async () => {
-			await bot.shutDown();
-			process.exit();
-		});
-	}).catch(getFatalCallback("Main.ts"));
-}
-
-start();
+	catch (e) {
+		logger.fatal('Error initializing k9:\n%s', e);
+	}
+})();

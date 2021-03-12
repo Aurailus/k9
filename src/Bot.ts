@@ -1,95 +1,166 @@
-const c = require('ansi-colors');
-const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync');
+// const low = require('lowdb');
+// const FileSync = require('lowdb/adapters/FileSync');
 
+// import { MongoClient, Db } from 'mongodb';
+import Mongoose from 'mongoose';
 import * as Discord from 'discord.js';
 
-import {getFatalCallback} from './Main';
-import {BotConf} from "./BotConf";
-import {BotStorage} from "./BotStorage";
-import {Database} from "./Database";
+// import {BotConf} from './BotConf';
+// import {BotStorage} from './BotStorage';
+// import {Database} from './Database';
 
-import {Command} from "./Commands/Command";
-import {ChatChannels} from "./Modules/ChatChannels";
-import {Leveller} from "./Modules/Leveller";
+import LevelPlugin from './Plugin/Level/LevelPlugin';
+import VoiceChatPlugin from './Plugin/VoiceChat/VoiceChatPlugin';
 
-import {Help} from "./Commands/Help";
-import {Level} from "./Commands/Level";
-import {Haystack} from "./Commands/Haystack";
-import {Leaderboard} from "./Commands/Leaderboard";
+// import {ChatChannels} from './Modules/ChatChannels';
 
-export class Bot {
-	config: BotConf;
-	client: Discord.Client;
-	storage: BotStorage;
+import { Command, CommandFn } from './Commands/Command';
+import Help from './Commands/Help';
+// import {Level} from './Commands/Level';
+// import {Haystack} from './Commands/Haystack';
+// import {Leaderboard} from './Commands/Leaderboard';
 
-	chatChannels: ChatChannels;
-	leveller: Leveller;
+import log4js from 'log4js';
 
-	commands: Command[] = [];
+const logger = log4js.getLogger();
 
-	constructor(config: BotConf) {
+export interface BotConfig {
+	auth: {
+		discord: string;
+		mongo_url: string;
+		mongo_db: string;
+	};
+
+	options: {
+		status: string
+		prefix: string;
+		delete_triggers: boolean;
+	}
+
+	plugin: {
+		level?: {
+			please_and_thank_you: boolean;
+			message: {
+				cooldown: number;
+				min_length: number;
+			},
+			levels: {
+				[num: string]: {
+					name: string;
+					experience: number;
+					role: number;
+				}
+			}
+		}
+	}
+}
+
+export default class Bot {
+	private config: BotConfig;
+	private client: Discord.Client;
+	// private db: ;
+	// storage: BotStorage;
+
+	// chatChannels: ChatChannels;
+	// leveller: Leveller;
+
+	private plugins: any[] = [];
+	private commands: { [command: string]: Command | CommandFn } = {};
+
+	constructor(config: BotConfig) {
 		this.config = config;
 		this.client = new Discord.Client();
-		this.storage = new BotStorage(config);
+		// this.storage = new BotStorage(config);
 
-		const adapter = new FileSync('./data/db.json');
-		this.storage.db = new Database(low(adapter));
+		// const adapter = new FileSync('./data/db.json');
+		// this.storage.db = new Database(low(adapter));
 	}
 
-	connect(): Promise<Bot> {
-		return new Promise((resolve, reject) => {
-			this.client.login(this.config.token);
 
-			this.client.on('ready', () => {
-				console.log(`Successfully connected as ${c.cyan(this.client.user.tag)}.`);
-				console.log(`Version 1.0.1`);
-				this.client.user.setActivity(this.config.playing_tag.message, {type: this.config.playing_tag.type});
-				this.client.user.setStatus('online');
+	/**
+	 * Initializes the connection to discord, and binds a shutdown handler.
+	 *
+	 * @returns the bot, once initialization is complete.
+	 */
+
+	async init(): Promise<this> {
+		await this.connect();
+		await this.bind();
+
+		process.on('SIGINT', () => this.onInterrupt().then(() => process.exit()));
+		
+		return this;
+	}
+
+
+	/**
+	 * Attempts to connect the client to discord, and sets its status to online.
+	 *
+	 * @returns a promise indicating the success state of the connection.
+	 */
+
+	private async connect() {
+		await new Promise((resolve, reject) => {
+			Mongoose.connect(this.config.auth.mongo_url, { useNewUrlParser: true, useUnifiedTopology: true });
+			Mongoose.set('useFindAndModify', false);
+			Mongoose.connection.on('error', reject);
+			Mongoose.connection.once('open', resolve);
+		});
+
+		await new Promise((resolve, reject) => {
+			this.client.login(this.config.auth.discord);
+			this.client.on('error', reject);
+			this.client.once('ready', () => {
+				const user = this.client.user as Discord.ClientUser;
+				user.setPresence({
+					status: 'online',
+					activity: { name: this.config.options.status, type: 'CUSTOM_STATUS' }
+				});
+				logger.info('Successfully connected as %s.', user.tag);
 				resolve(this);
 			});
-
-			this.client.on('error', (error: Error) => {
-				reject(error);
-			});
-
-			this.client.on('message', (msg) => {
-				for (let command of this.commands) {
-					if (msg.content.substr(0, command.prefix.length).toLowerCase() == command.prefix.toLowerCase()) {
-						command.exec(msg);
-						return;
-					}
-				}
-			})
 		});
 	}
 
-	bindFunctions(): Promise<Bot> {
-		return new Promise((resolve, reject) => {
-			try {
-				this.chatChannels = new ChatChannels(this.client, this.storage);
-				this.leveller = new Leveller(this.client, this.storage);
 
-				this.commands.push(new Help(this.client, this.storage));
-				this.commands.push(new Level(this.client, this.storage));
-				this.commands.push(new Haystack(this.client, this.storage));
-				this.commands.push(new Leaderboard(this.client, this.storage));
+	/**
+	 * Binds plugins to the bot.
+	 */
 
-				resolve(this);
-			}
-			catch (e) { reject(e); }
+	private bind() {
+		this.plugins.push(new LevelPlugin(this.config as any, this.client, this.commands));
+		this.plugins.push(new VoiceChatPlugin(this.config as any, this.client));
+
+		this.commands.help = Help;
+
+		// this.chatChannels = new ChatChannels(this.client, this.storage);
+		// this.leveller = new Leveller(this.client, this.storage);
+		// this.commands.push(new Haystack(this.client, this.storage));
+		// this.commands.push(new Leaderboard(this.client, this.storage));
+
+		this.client.on('message', (msg) => {
+			if (!msg.content.startsWith(this.config.options.prefix + ' ')) return;
+			const full = msg.content.substr(this.config.options.prefix.length + 1).trim();
+			const command = full.substr(0, full.indexOf(' ') === -1 ? full.length : full.indexOf(' ')).toLowerCase().trimLeft();
+			const args = command.substr(command.length).trimLeft().split(' ');
+			const cmd = this.commands[command];
+			if (typeof cmd === 'function') cmd(msg, command, args);
+			else if (typeof cmd === 'object') cmd.trigger(msg, command, args);
 		});
 	}
 
-	async shutDown() {
+
+	/**
+	 * Performs cleanup activities. Bound to SIGINT after the bot has been set up.
+	 */
+
+	private async onInterrupt() {
 		try {
-			await this.chatChannels.cleanup();
-			await this.leveller.cleanup();
-
-			console.log(`Shut down gracefully.`);
+			await Promise.all(this.plugins.map(async p => p.cleanup?.()));
+			logger.info('Shut down successfully.');
 		}
 		catch (e) {
-			getFatalCallback("Shutdown")(e);
+			logger.fatal('Error shutting down k9:\n%s', e);
 		}
 	}
 }

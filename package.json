@@ -4,24 +4,33 @@
   "description": "A simple discord bot for tracking user levels.",
   "main": "build/Main.js",
   "scripts": {
-    "start": "node ./build/Main.js",
+    "dev": "nodemon .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Nicole Collings (Aurailus)",
+  "author": "Auri Collings",
   "license": "UNLICENSED",
   "dependencies": {
-    "@types/node": "^12.12.22",
-    "ansi-colors": "^4.1.1",
-    "bufferutil": "^4.0.1",
-    "discord.js": "^11.5.1",
+    "bufferutil": "^4.0.3",
+    "discord.js": "^12.5.1",
     "file-api": "^0.10.4",
     "filereader": "^0.10.3",
-    "form-data": "^2.5.1",
-    "image-to-base64": "^2.0.1",
-    "jimp": "^0.6.8",
+    "form-data": "^4.0.0",
+    "image-to-base64": "^2.1.1",
+    "jimp": "^0.16.1",
     "lowdb": "^1.0.0",
-    "request": "^2.88.0",
-    "tsc": "^1.20150623.0",
+    "mongodb": "^3.6.4",
+    "mongoose": "^5.12.0",
+    "request": "^2.88.2",
+    "toml": "^3.0.0",
+    "tslib": "^2.1.0",
     "xmlhttprequest": "^1.8.0"
+  },
+  "devDependencies": {
+    "@types/mongodb": "^3.6.7",
+    "@types/node": "^12.20.1",
+    "log4js": "^6.3.0",
+    "nodemon": "^2.0.7",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.5"
   }
 }
