@@ -6,24 +6,28 @@ import { Command, CommandFn } from '../../Commands/Command';
 
 import LevelCommand from './LevelCommand';
 import LeaderboardCommand from './LeaderboardCommand';
+import SetExperienceCommand from './SetExperienceCommand';
+
+// import { experienceInLevel } from './Calculate';
+
+export interface ExperienceConfig {
+	offset: number,
+	base: number,
+	multiplier: number
+}
 
 interface LevelPluginConfig {
 	please_and_thank_you: boolean;
+	experience: ExperienceConfig,
 	message: {
 		cooldown: number;
 		min_length: number;
 	}
-	levels: {
-		[key: string]: {
-			name: string;
-			experience: number;
-			role: number;
-		}
-	}
+	roles: {
+		role: string,
+		level: number
+	}[]
 }
-// import {GuildData} from "../GuildData";
-// import {LevelImageBuilder} from "./LevelImageBuilder"
-// import {BotLevelRoles, Database, DBServer, DBUser} from "../Database";
 
 const levelPluginGuildSchema = new Mongoose.Schema({
 	id: String
@@ -57,33 +61,49 @@ interface ILevelPluginUser extends Mongoose.Document {
 
 export const LevelPluginUser = Mongoose.model<ILevelPluginUser>('LevelPluginUser', levelPluginUserSchema);
 
+export interface LevelRole {
+	id: string;
+	level: number;
+	totalExperience: number;
+}
+
 export default class LevelPlugin {
-	private roles: { name: string, experience: number, total_experience: number, role: number }[] = [];
+	private roles: LevelRole[] = [];
 	// storage: BotStorage;
 	// imgBuilder: LevelImageBuilder;
 	// checkVAInterval: any;
 
 	constructor(private config: BotConfig & { plugin: { level: LevelPluginConfig } },
 		private client: Discord.Client, commands: { [command: string]: Command | CommandFn }) {
-		// this.storage = storage;
-		// this.imgBuilder = new LevelImageBuilder();
 
-		let total_experience = 0;
-		Object.keys(this.config.plugin.level.levels).map(m => parseInt(m)).sort((a, b) => a - b).forEach(n => {
-			const role = this.config.plugin.level.levels[n.toString()];
-			total_experience += role.experience;
-			this.roles.push({ ...role, total_experience });
+		let experience = this.config.plugin.level.experience;
+
+		let lastLevel = 0;
+		let totalExperience = experience.offset;
+		this.config.plugin.level.roles.map(r => {
+			for (let i = lastLevel; i < r.level; i++)
+				totalExperience += experience.base * Math.sqrt(experience.multiplier * i);
+			lastLevel = r.level;
+			this.roles.push({ id: r.role, level: r.level, totalExperience });
 		});
 
+		// let total_experience = 0;
+		// Object.keys(this.config.plugin.level.levels).map(m => parseInt(m)).sort((a, b) => a - b).forEach(n => {
+		// 	const role = this.config.plugin.level.levels[n.toString()];
+		// 	total_experience += role.experience;
+		// 	this.roles.push({ ...role, total_experience });
+		// });
+
 		client.on('message', this.onMessage);
-		commands.level = new LevelCommand(this.roles);
-		commands.leaderboard = new LeaderboardCommand(this.roles);
+		commands.level = new LevelCommand(experience, this.roles);
+		commands.leaderboard = new LeaderboardCommand(experience, this.roles);
+		commands.setxp = SetExperienceCommand;
 
 		// this.checkVAInterval = setInterval(this.checkVoiceActivity.bind(this), 5*1000*60);
 	}
 
 	private onMessage = async (msg: Discord.Message) => {
-		if (msg.author.id === this.client.user!.id) return;
+		if (msg.author.bot) return;
 		if (msg.content.substr(0, this.config.options.prefix.length + 1).toLowerCase() == this.config.options.prefix + ' ') return;
 
 		// Completely ignore messages that are less than N characters and without a space.

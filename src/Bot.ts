@@ -142,7 +142,7 @@ export default class Bot {
 			if (!msg.content.startsWith(this.config.options.prefix + ' ')) return;
 			const full = msg.content.substr(this.config.options.prefix.length + 1).trim();
 			const command = full.substr(0, full.indexOf(' ') === -1 ? full.length : full.indexOf(' ')).toLowerCase().trimLeft();
-			const args = command.substr(command.length).trimLeft().split(' ');
+			const args = full.substr(command.length).trimLeft().split(' ');
 			const cmd = this.commands[command];
 			if (typeof cmd === 'function') cmd(msg, command, args);
 			else if (typeof cmd === 'object') cmd.trigger(msg, command, args);
