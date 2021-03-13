@@ -96,7 +96,7 @@ export default class LevelPlugin {
 
 		client.on('message', this.onMessage);
 		commands.level = new LevelCommand(experience, this.roles);
-		commands.leaderboard = new LeaderboardCommand(experience, this.roles);
+		commands.leaderboard = new LeaderboardCommand(experience);
 		commands.setxp = SetExperienceCommand;
 
 		// this.checkVAInterval = setInterval(this.checkVoiceActivity.bind(this), 5*1000*60);

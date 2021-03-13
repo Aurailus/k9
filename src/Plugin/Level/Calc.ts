@@ -1,4 +1,4 @@
-import { ExperienceConfig } from './LevelPlugin';
+import { ExperienceConfig, LevelRole } from './LevelPlugin';
 
 
 /**
@@ -46,4 +46,34 @@ export function xpInLevel(config: ExperienceConfig, level: number) {
 	if (level < 0) return 0;
 	if (level == 0) return config.offset;
 	return config.base * Math.sqrt(config.multiplier * level);
+}
+
+
+/**
+ * Returns the role for the XP provided.
+ *
+ * @param {ExperienceConfig} config - The experience config to use for the calculations.
+ * @param {LevelRole[]} roles - The roles to use for the calculations.
+ * @param {number} experience - The experience to do the calculation for.
+ */
+
+export function xpToRole(config: ExperienceConfig, roles: LevelRole[], experience: number) {
+	return levelToRole(roles, xpToLevel(config, experience));
+}
+
+
+/**
+ * Returns the role for the level provided.
+ *
+ * @param {LevelRole[]} roles - The roles to use for the calculations.
+ * @param {number} level - The level to do the calculation for.
+ */
+
+export function levelToRole(roles: LevelRole[], level: number) {
+	let roleID: string | undefined = undefined;
+	for (let role of roles) {
+		if (role.level <= level) roleID = role.id;
+		else break;
+	}
+	return roleID;
 }
