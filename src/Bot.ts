@@ -69,7 +69,9 @@ export default class Bot {
 
 	constructor(config: BotConfig) {
 		this.config = config;
-		this.client = new Discord.Client();
+		const intents = new Discord.Intents(Discord.Intents.NON_PRIVILEGED);
+		intents.add('GUILD_MEMBERS');
+		this.client = new Discord.Client({ ws: { intents: intents }});
 		// this.storage = new BotStorage(config);
 
 		// const adapter = new FileSync('./data/db.json');
@@ -144,8 +146,12 @@ export default class Bot {
 			const command = full.substr(0, full.indexOf(' ') === -1 ? full.length : full.indexOf(' ')).toLowerCase().trimLeft();
 			const args = full.substr(command.length).trimLeft().split(' ');
 			const cmd = this.commands[command];
-			if (typeof cmd === 'function') cmd(msg, command, args);
-			else if (typeof cmd === 'object') cmd.trigger(msg, command, args);
+
+			if (cmd != undefined) {
+				if (this.config.options.delete_triggers) msg.delete();
+				if (typeof cmd === 'function') cmd(msg, command, args);
+				else if (typeof cmd === 'object') cmd.trigger(msg, command, args);
+			}
 		});
 	}
 

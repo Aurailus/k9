@@ -9,7 +9,7 @@ export default function Help(msg: Discord.Message) {
 				'Hi, I\'m k9! I\'m a user level tracking bot made by Auri#1311. ' +
 				'I assign users levels and automagically grants users roles once they reach certain level thresholds. ' +
 				'I also have a few simple commands available to interact with me.')
-			.setFooter(`Requested by ${(msg.member) ? msg.member.displayName : msg.author.username}`, msg.author.avatarURL({ size: 32 })!)
+			.setFooter(`${(msg.member) ? msg.member.displayName : msg.author.username}`, msg.author.avatarURL({ size: 32 })!)
 			.setTimestamp()
 
 			.addField('`k9 help`', '⠀Sends this message.')

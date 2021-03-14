@@ -1,32 +1,34 @@
+import { promises as fs } from 'fs';
 import * as Mongoose from 'mongoose';
 import * as Discord from 'discord.js';
 
+import * as Calc from './Calc';
 import { BotConfig } from '../../Bot';
 import { Command, CommandFn } from '../../Commands/Command';
 
 import LevelCommand from './LevelCommand';
+import buildLevelImage from './BuildLevelImage';
 import LeaderboardCommand from './LeaderboardCommand';
-import SetExperienceCommand from './SetExperienceCommand';
-
-// import { experienceInLevel } from './Calculate';
 
 export interface ExperienceConfig {
-	offset: number,
-	base: number,
-	multiplier: number
+	a: number,
+	b: number,
+	c: number
 }
 
-interface LevelPluginConfig {
+export interface Role {
+	role: string;
+	level: number;
+}
+
+export interface LevelPluginConfig {
 	please_and_thank_you: boolean;
-	experience: ExperienceConfig,
+	experience: ExperienceConfig;
+	roles: Role[];
 	message: {
 		cooldown: number;
 		min_length: number;
 	}
-	roles: {
-		role: string,
-		level: number
-	}[]
 }
 
 const levelPluginGuildSchema = new Mongoose.Schema({
@@ -43,7 +45,6 @@ const levelPluginUserSchema = new Mongoose.Schema({
 	guild_id: String,
 	id: String,
 
-	level: Number,
 	experience: Number,
 	totalMessages: Number,
 	lastInteracted: Number
@@ -53,7 +54,6 @@ interface ILevelPluginUser extends Mongoose.Document {
 	guild_id: ILevelPluginGuild['_id'];
 	id: string;
 
-	level: number;
 	experience: number;
 	totalMessages: number;
 	lastInteracted: number;
@@ -61,68 +61,50 @@ interface ILevelPluginUser extends Mongoose.Document {
 
 export const LevelPluginUser = Mongoose.model<ILevelPluginUser>('LevelPluginUser', levelPluginUserSchema);
 
-export interface LevelRole {
-	id: string;
-	level: number;
-	totalExperience: number;
-}
-
 export default class LevelPlugin {
-	private roles: LevelRole[] = [];
-	// storage: BotStorage;
-	// imgBuilder: LevelImageBuilder;
-	// checkVAInterval: any;
-
 	constructor(private config: BotConfig & { plugin: { level: LevelPluginConfig } },
 		private client: Discord.Client, commands: { [command: string]: Command | CommandFn }) {
 
-		let experience = this.config.plugin.level.experience;
-
-		let lastLevel = 0;
-		let totalExperience = experience.offset;
-		this.config.plugin.level.roles.map(r => {
-			for (let i = lastLevel; i < r.level; i++)
-				totalExperience += experience.base * Math.sqrt(experience.multiplier * i);
-			lastLevel = r.level;
-			this.roles.push({ id: r.role, level: r.level, totalExperience });
-		});
-
-		// let total_experience = 0;
-		// Object.keys(this.config.plugin.level.levels).map(m => parseInt(m)).sort((a, b) => a - b).forEach(n => {
-		// 	const role = this.config.plugin.level.levels[n.toString()];
-		// 	total_experience += role.experience;
-		// 	this.roles.push({ ...role, total_experience });
-		// });
-
 		client.on('message', this.onMessage);
-		commands.level = new LevelCommand(experience, this.roles);
-		commands.leaderboard = new LeaderboardCommand(experience);
-		commands.setxp = SetExperienceCommand;
+		commands.level = new LevelCommand(config.plugin.level);
+		commands.leaderboard = new LeaderboardCommand(config.plugin.level);
 
-		// this.checkVAInterval = setInterval(this.checkVoiceActivity.bind(this), 5*1000*60);
+		// Loads all users from the classic LowDB.
+		// (async () => {
+		// 	await LevelPluginUser.deleteMany({});
+		// 	let f = JSON.parse(fs.readFileSync('./data/db.json').toString());
+		// 	await Promise.all(f.servers[0].users.map(async ({ id, totalXP, messages }: any) => {
+		// 		const { _id: guild_id } = (await LevelPluginGuild.findOneAndUpdate({}))!;
+		// 		await LevelPluginUser.create({
+		// 			experience: totalXP,
+		// 			totalMessages: messages,
+		// 			guild_id: guild_id,
+		// 			id: id,
+		// 		});
+		// 	}));
+		// })();
+
+		// Refreshes all user roles.
+		// (async () => {
+		// 	this.client.guilds.cache.forEach(async guild => {
+		// 		let members = await guild.members.fetch();
+		// 		members.forEach(member => this.updateMember(member));
+		// 	});
+		// })()
 	}
 
 	private onMessage = async (msg: Discord.Message) => {
 		if (msg.author.bot) return;
 		if (msg.content.substr(0, this.config.options.prefix.length + 1).toLowerCase() == this.config.options.prefix + ' ') return;
-
-		// Completely ignore messages that are less than N characters and without a space.
-		if (msg.content.length < this.config.plugin.level.message.min_length || msg.content.split(' ').length - 1 < 1) return;
 		
 		// Ignore DM conversations.
 		if (!msg.guild) return;
 
 		const { _id: guild_id } = await LevelPluginGuild.findOneAndUpdate({ id: msg.guild.id },
-			{ $setOnInsert: { id: msg.guild.id } },
-			{ upsert: true, new: true });
+			{ $setOnInsert: { id: msg.guild.id } }, { upsert: true, new: true });
 
 		const user = await LevelPluginUser.findOneAndUpdate({ id: msg.author.id, guild_id }, {
-			$setOnInsert: {
-				guild_id: guild_id,
-				id: msg.author.id,
-				experience: 0,
-				level: 0,
-			},
+			$setOnInsert: { guild_id, id: msg.author.id, experience: 0 },
 			$inc: { totalMessages: 1 }
 		}, { upsert: true, new: true });
 
@@ -132,9 +114,9 @@ export default class LevelPlugin {
 		// Allow people to thank the dog... allow the dog to feel emotion.
 		if (this.config.plugin.level.please_and_thank_you && msg.content.toLowerCase().startsWith('good')) {
 			const lastMsg = (await msg.channel.messages.fetch({ limit: 2 })).last();
-			if (lastMsg && lastMsg.author.id !== this.client.user!.id) {
+			if (lastMsg && lastMsg.author.id === this.client.user!.id) {
 				if (/good.(bo[i|y]|g[u|i]rl)/gi.test(msg.content.toLowerCase())) {
-					msg.reply("I'm enby tho :(");
+					msg.reply('I\'m enby tho :(');
 					return;
 				}
   			else if (msg.content.toLowerCase().startsWith('good dog') &&
@@ -146,112 +128,38 @@ export default class LevelPlugin {
 			}
 		}
 
+		// Completely ignore messages that are less than N characters and without a space.
+		if (!thanked && (msg.content.length < this.config.plugin.level.message.min_length || msg.content.split(' ').length - 1 < 1)) return;
+
 		// Ignore messages that are too recent.
 		if (!thanked && (Date.now() - user.lastInteracted < this.config.plugin.level.message.cooldown * 1000)) return;
 
-		await LevelPluginUser.findOneAndUpdate({ id: msg.author.id, guild_id }, {
+		const newUser = (await LevelPluginUser.findOneAndUpdate({ id: msg.author.id, guild_id }, {
 			$inc: { experience },
 			$set: { lastInteracted: Date.now() }
-		}, { new: true });
+		}, { new: true }))!;
 
-		// for (let voice in guild.chatChannels) {
-		// 	if (guild.chatChannels[voice] == msg.channel.id) {
-		// 		xp /= 3;
-		// 	}
-		// }
-
-
-		// 	const cost = (this.storage.conf.xp_properties.level_base_cost + Math.pow(user.level, this.storage.conf.xp_properties.level_multiplier));
-
-		// 	if (user.levelXP >= cost) {
-		// 		user.level++;
-		// 		user.levelXP -= cost;
-
-		// 		this.imgBuilder.generate(msg.member.displayName, user.level, msg.author.id).then(image => {
-		// 			msg.channel.send("", {file: image as any}).then(() => {
-		// 				fs.unlinkSync(image);
-		// 			});
-		// 		});
-
-		// 		let currentRole = -1;
-		// 		let previousRole = -1;
-
-		// 		const roles: BotLevelRoles = server.getLevelRolesTable();
-
-		// 		for (let role in roles) {
-		// 			let num = parseInt(role);
-		// 			if (num <= user.level && num > currentRole) currentRole = num;
-		// 			if (num <= user.level - 1 && num > previousRole) previousRole = num;
-		// 		}
-
-		// 		if (currentRole != previousRole) {
-		// 			if (previousRole != -1) msg.member.removeRole(msg.guild.roles.find(r => r.id == roles[previousRole]));
-		// 			if (currentRole != -1) msg.member.addRole(msg.guild.roles.find(r => r.id == roles[currentRole]), 'Update user level role.');
-		// 		}
-		// 	}
+		// Award user if they cross a level boundary.
+		if (Calc.xpToLevel(this.config.plugin.level, user.experience) !=
+			Calc.xpToLevel(this.config.plugin.level, newUser.experience)) {
+			let image = await buildLevelImage(msg.member!.displayName,
+				Calc.xpToLevel(this.config.plugin.level, newUser.experience), msg.author.id);
+			await msg.channel.send('', { files: [ image ] });
+			await this.updateMember(msg.member!);
+			await fs.unlink(image);
 		}
+	}
 
-	// checkVoiceActivity(): void {
-	// 	for (let guildKey in this.storage.guildData) {
-	// 		let guild = this.storage.guildData[guildKey];
-	// 		for (let activeVoiceChannel in guild.chatChannels) {
-	// 			let channel = guild.guild.channels.get(activeVoiceChannel) as Discord.VoiceChannel;
-	// 			let undeafenedUsers: number = 0;
-				
-	// 			channel.members.forEach((member, key) => {
-	// 				if (!member.selfDeaf) undeafenedUsers++;
-	// 			});
-
-	// 			if (undeafenedUsers >= 2) {
-	// 				channel.members.forEach((member, key) => {
-	// 					if (!member.selfDeaf && !member.selfMute) {
-
-	// 						let chatChannel = (guild.guild.channels.get(guild.chatChannels[activeVoiceChannel]) as Discord.TextChannel);
-
-	// 						let server: DBServer = this.storage.db.getServer(guild.guild);
-	// 						let user: DBUser = server.getUser(member);
-
-	// 						let xp = Math.round(Math.random() + 0.3);
-
-	// 						user.levelXP += xp;
-	// 						user.totalXP += xp;
-
-	// 						const cost = (this.storage.conf.xp_properties.level_base_cost + Math.pow(user.level, this.storage.conf.xp_properties.level_multiplier));
-
-	// 						if (user.levelXP >= cost) {
-	// 							user.level++;
-	// 							user.levelXP -= cost;
-
-	// 							if (chatChannel) {
-	// 								this.imgBuilder.generate(member.displayName, user.level, member.id).then(image => {
-	// 									chatChannel.send("", {file: image as any}).then(() => {
-	// 										fs.unlinkSync(image);
-	// 									});
-	// 								});
-	// 							}
-
-	// 							let currentRole = -1;
-	// 							let previousRole = -1;
-
-	// 							const roles: BotLevelRoles = server.getLevelRolesTable();
-
-	// 							for (let role in roles) {
-	// 								let num = parseInt(role);
-	// 								if (num <= user.level && num > currentRole) currentRole = num;
-	// 								if (num <= user.level - 1 && num > previousRole) previousRole = num;
-	// 							}
-
-	// 							if (currentRole != previousRole) {
-	// 								if (previousRole != -1) member.removeRole(member.guild.roles.find(r => r.id == roles[previousRole]));
-	// 								if (currentRole != -1) member.addRole(member.guild.roles.find(r => r.id == roles[currentRole]), 'Update user level role.');
-	// 							}
-	// 						}
-						
-	// 						server.pushUser(user);
-	// 					}
-	// 				});
-	// 			}
-	// 		}
-	// 	}
-	// }
+	public async updateMember(member: Discord.GuildMember) {
+		const user = (await LevelPluginUser.findOne({ id: member.id })) ?? { experience: 0 };
+		let desiredRole = Calc.xpToRole(this.config.plugin.level, user.experience);
+		this.config.plugin.level.roles.map(r => r.role).forEach(role => {
+			if (member.roles.cache.has(role)) {
+				if (role != desiredRole) member.roles.remove(role);
+			}
+			else {
+				if (role == desiredRole) member.roles.add(role);
+			}
+		});
+	}
 }
