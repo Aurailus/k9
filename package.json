@@ -4,7 +4,8 @@
   "description": "A simple discord bot for tracking user levels.",
   "main": "build/Main.js",
   "scripts": {
-    "dev": "nodemon ."
+    "dev": "nodemon .",
+    "build": "cd src; tsc --project ../tsconfig.json"
   },
   "author": "Auri Collings",
   "license": "UNLICENSED",

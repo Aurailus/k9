@@ -72,7 +72,7 @@ export default class LevelPlugin {
 		// Loads all users from the classic LowDB.
 		// (async () => {
 		// 	await LevelPluginUser.deleteMany({});
-		// 	let f = JSON.parse(fs.readFileSync('./data/db.json').toString());
+		// 	let f = JSON.parse((await fs.readFile('./data/db.json')).toString());
 		// 	await Promise.all(f.servers[0].users.map(async ({ id, totalXP, messages }: any) => {
 		// 		const { _id: guild_id } = (await LevelPluginGuild.findOneAndUpdate({}))!;
 		// 		await LevelPluginUser.create({

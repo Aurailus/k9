@@ -1,24 +1,11 @@
-// const low = require('lowdb');
-// const FileSync = require('lowdb/adapters/FileSync');
-
-// import { MongoClient, Db } from 'mongodb';
 import Mongoose from 'mongoose';
 import * as Discord from 'discord.js';
-
-// import {BotConf} from './BotConf';
-// import {BotStorage} from './BotStorage';
-// import {Database} from './Database';
 
 import LevelPlugin from './Plugin/Level/LevelPlugin';
 import VoiceChatPlugin from './Plugin/VoiceChat/VoiceChatPlugin';
 
-// import {ChatChannels} from './Modules/ChatChannels';
-
 import { Command, CommandFn } from './Commands/Command';
 import Help from './Commands/Help';
-// import {Level} from './Commands/Level';
-// import {Haystack} from './Commands/Haystack';
-// import {Leaderboard} from './Commands/Leaderboard';
 
 import log4js from 'log4js';
 
@@ -28,7 +15,6 @@ export interface BotConfig {
 	auth: {
 		discord: string;
 		mongo_url: string;
-		mongo_db: string;
 	};
 
 	options: {
@@ -58,11 +44,6 @@ export interface BotConfig {
 export default class Bot {
 	private config: BotConfig;
 	private client: Discord.Client;
-	// private db: ;
-	// storage: BotStorage;
-
-	// chatChannels: ChatChannels;
-	// leveller: Leveller;
 
 	private plugins: any[] = [];
 	private commands: { [command: string]: Command | CommandFn } = {};
@@ -72,10 +53,6 @@ export default class Bot {
 		const intents = new Discord.Intents(Discord.Intents.NON_PRIVILEGED);
 		intents.add('GUILD_MEMBERS');
 		this.client = new Discord.Client({ ws: { intents: intents }});
-		// this.storage = new BotStorage(config);
-
-		// const adapter = new FileSync('./data/db.json');
-		// this.storage.db = new Database(low(adapter));
 	}
 
 
