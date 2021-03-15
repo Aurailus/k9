@@ -142,11 +142,14 @@ export default class LevelPlugin {
 		// Award user if they cross a level boundary.
 		if (Calc.xpToLevel(this.config.plugin.level, user.experience) !=
 			Calc.xpToLevel(this.config.plugin.level, newUser.experience)) {
-			let image = await buildLevelImage(msg.member!.displayName,
-				Calc.xpToLevel(this.config.plugin.level, newUser.experience), msg.author.id);
-			await msg.channel.send('', { files: [ image ] });
-			await this.updateMember(msg.member!);
-			await fs.unlink(image);
+			try {
+				await this.updateMember(msg.member!);
+				let image = await buildLevelImage(msg.member!.displayName,
+					Calc.xpToLevel(this.config.plugin.level, newUser.experience), msg.author.id);
+				await msg.channel.send('', { files: [ image ] });
+				await fs.unlink(image);
+			}
+			catch (e) { console.log(e); }
 		}
 	}
 
