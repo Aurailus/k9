@@ -17,43 +17,49 @@ k9 is a minimalist level tracker bot for discord, used in Auri's Den. It tracks 
 
 1) Clone this repository: `git clone https://github.com/Aurailus/k9`
 2) Install node dependencies: `npm install`
-3) Create `data/conf.json` and `data/db.json` files.
-4) Put valid discord token and other configuration details in `data/conf.json`.
+3) Copy `conf.example.toml` to `conf.toml`
+4) Put valid discord token and other configuration details in `conf.toml`.
 5) Run the bot: `npm start`
 
 ### Configuration
 
-To allow the bot to start and track levels, it needs some configuration information, which goes in `data/conf.json`. An example of the parameters required is below.
+To allow the bot to start, track levels, and give role rewards fill out `conf.toml` with the missing credentials. An example and explanation of all the variables are shown below.
 
 **Example:**
-```json
-{
-  "token": "VALID_DISCORD_TOKEN",
-  "xp_properties": {
-    "level_base_cost": 15,
-    "level_multiplier": 0.4
-  }
-}
+```tmol
+[auth]
+discord = "token" # https://discord.com/developers/applications Get token here
+mongo_url = "mongodb_url" # url from mongodb
+
+[options]
+status = string # set custom status
+prefix = sring # bot prefix
+delete_triggers = boolean # delete command after execute 
+
+[plugin.level]
+please_and_thank_you = boolean # Bot response to "good dog" after rank up.
+
+[plugin.level.message]
+cooldown = number # cooldown time
+min_length = number # minimum message length
+
+[plugin.level.experience] # https://www.desmos.com/calculator/80hyi0deu6
+a = number # First level XP offset.
+b = number # Larger values makes XP / level higher.
+c = number # Larger values make XP / level exponentially higher.
+
+[[plugin.level.roles]] # rolename
+level = 1 # level to acquire role
+role = string # role ID
+[[plugin.level.roles]]
+level = 2
+role = string
+[[plugin.level.roles]]
+level = 5
+role = string
+...
 ```
 
-In the future, role rewards will be configured within the bot. As of now to set role rewards, go in to the database file (`data/db.json`) and make sure you have `levelRoles` section inside your `server` section.
-
-**Example:**
-```json
-{
-  "servers": [
-    {
-      "id": "your_server_id",
-      "levelRoles": {
-        "1": "role_id_for_level_1",
-        "5": "role_id_for_level_5",
-        "10": "role_id_for_level_10",
-        ...
-      },
-      ...
-```
-
-The key is the level which the role applies to, the value is the **role id** (found by right clicking the role in the Server Settings and pressing `Copy ID` with developer mode enabled.)
 
 ### Contributing
 
