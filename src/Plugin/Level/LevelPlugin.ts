@@ -1,3 +1,4 @@
+import log4js from 'log4js';
 import { promises as fs } from 'fs';
 import * as Mongoose from 'mongoose';
 import * as Discord from 'discord.js';
@@ -9,6 +10,8 @@ import { Command, CommandFn } from '../../Commands/Command';
 import LevelCommand from './LevelCommand';
 import buildLevelImage from './BuildLevelImage';
 import LeaderboardCommand from './LeaderboardCommand';
+
+const logger = log4js.getLogger();
 
 export interface ExperienceConfig {
 	a: number,
@@ -119,12 +122,12 @@ export default class LevelPlugin {
 					msg.reply('I\'m enby tho :(');
 					return;
 				}
-  			else if (msg.content.toLowerCase().startsWith('good dog') &&
-  				(lastMsg.attachments.first()?.name || '').substring(0, msg.member!.id.length) === msg.member!.id) {
-  				msg.reply('Woof!');
- 		 			experience += Math.random() * 6;
- 		 			thanked = true;
-  			}
+				else if (msg.content.toLowerCase().startsWith('good dog') &&
+					(lastMsg.attachments.first()?.name || '').substring(0, msg.member!.id.length) === msg.member!.id) {
+					msg.reply('Woof!');
+					experience += Math.random() * 6;
+					thanked = true;
+				}
 			}
 		}
 
@@ -140,7 +143,7 @@ export default class LevelPlugin {
 		}, { new: true }))!;
 
 		// Award user if they cross a level boundary.
-		if (Calc.xpToLevel(this.config.plugin.level, user.experience) !=
+		if (Calc.xpToLevel(this.config.plugin.level, user.experience) !==
 			Calc.xpToLevel(this.config.plugin.level, newUser.experience)) {
 			try {
 				await this.updateMember(msg.member!);
@@ -149,7 +152,7 @@ export default class LevelPlugin {
 				await msg.channel.send('', { files: [ image ] });
 				await fs.unlink(image);
 			}
-			catch (e) { console.log(e); }
+			catch (e) { logger.error(e); }
 		}
 	}
 
@@ -158,10 +161,10 @@ export default class LevelPlugin {
 		let desiredRole = Calc.xpToRole(this.config.plugin.level, user.experience);
 		this.config.plugin.level.roles.map(r => r.role).forEach(role => {
 			if (member.roles.cache.has(role)) {
-				if (role != desiredRole) member.roles.remove(role);
+				if (role !== desiredRole) member.roles.remove(role);
 			}
 			else {
-				if (role == desiredRole) member.roles.add(role);
+				if (role === desiredRole) member.roles.add(role);
 			}
 		});
 	}

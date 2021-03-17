@@ -52,7 +52,7 @@ export default class Bot {
 		this.config = config;
 		const intents = new Discord.Intents(Discord.Intents.NON_PRIVILEGED);
 		intents.add('GUILD_MEMBERS');
-		this.client = new Discord.Client({ ws: { intents: intents }});
+		this.client = new Discord.Client({ ws: { intents }});
 	}
 
 
@@ -112,11 +112,6 @@ export default class Bot {
 
 		this.commands.help = Help;
 
-		// this.chatChannels = new ChatChannels(this.client, this.storage);
-		// this.leveller = new Leveller(this.client, this.storage);
-		// this.commands.push(new Haystack(this.client, this.storage));
-		// this.commands.push(new Leaderboard(this.client, this.storage));
-
 		this.client.on('message', (msg) => {
 			if (!msg.content.startsWith(this.config.options.prefix + ' ')) return;
 			const full = msg.content.substr(this.config.options.prefix.length + 1).trim();
@@ -124,7 +119,7 @@ export default class Bot {
 			const args = full.substr(command.length).trimLeft().split(' ');
 			const cmd = this.commands[command];
 
-			if (cmd != undefined) {
+			if (cmd !== undefined) {
 				if (this.config.options.delete_triggers) msg.delete();
 				if (typeof cmd === 'function') cmd(msg, command, args);
 				else if (typeof cmd === 'object') cmd.trigger(msg, command, args);

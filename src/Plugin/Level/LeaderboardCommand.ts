@@ -1,7 +1,10 @@
+import log4js from 'log4js';
 import * as Discord from 'discord.js';
 
 import * as Calc from './Calc';
 import { LevelPluginGuild, LevelPluginUser, LevelPluginConfig } from './LevelPlugin';
+
+const logger = log4js.getLogger();
 
 export default class LevelCommand {
 	constructor(private config: LevelPluginConfig) {}
@@ -29,7 +32,7 @@ export default class LevelCommand {
 				embed.addField(`⠀${i + 1}) ${name}${i < 3 ? ' :sparkles:' : ''}`,
 					`⠀Level ${level} • ${Math.floor(users[i].experience)} XP`, true);
 			}
-			catch (e) { console.log(e); }
+			catch (e) { logger.error(e); }
 		}
 		
 		msg.channel.send({ embed }).catch(_ => { /* Missing send permissions. */ });

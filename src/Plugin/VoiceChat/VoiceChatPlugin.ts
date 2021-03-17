@@ -40,8 +40,8 @@ export default class VoiceChatPlugin {
 	}
 
 	onVoiceStateUpdate = (oldState: Discord.VoiceState, newState: Discord.VoiceState) => {
-		if (oldState.channelID == newState.channelID) return;
-		if (oldState.channelID != null) {
+		if (oldState.channelID === newState.channelID) return;
+		if (oldState.channelID !== null) {
 			let channel = oldState.guild.channels.resolve(oldState.channelID);
 			if (!channel) return;
 			if (channel.members.size == 0 && this.channels[channel.guild.id]) {
