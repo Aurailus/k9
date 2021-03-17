@@ -98,7 +98,7 @@ export default class LevelPlugin {
 
 	private onMessage = async (msg: Discord.Message) => {
 		if (msg.author.bot) return;
-		if (msg.content.substr(0, this.config.options.prefix.length + 1).toLowerCase() == this.config.options.prefix + ' ') return;
+		if (msg.content.substr(0, this.config.options.prefix.length + 1).toLowerCase() === this.config.options.prefix + ' ') return;
 		
 		// Ignore DM conversations.
 		if (!msg.guild) return;

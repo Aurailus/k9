@@ -41,19 +41,6 @@ export function xpInLevel(config: LevelPluginConfig, level: number) {
 
 
 /**
- * Returns the role for the XP provided.
- *
- * @param {LevelPluginConfig} config - The experience config to use for the calculations.
- * @param {LevelRole[]} roles - The roles to use for the calculations.
- * @param {number} experience - The experience to do the calculation for.
- */
-
-export function xpToRole(config: LevelPluginConfig, experience: number) {
-	return levelToRole(config, xpToLevel(config, experience));
-}
-
-
-/**
  * Returns the role for the level provided.
  *
  * @param {LevelRole[]} roles - The roles to use for the calculations.
@@ -67,4 +54,17 @@ export function levelToRole(config: LevelPluginConfig, level: number) {
 		else break;
 	}
 	return roleID;
+}
+
+
+/**
+ * Returns the role for the XP provided.
+ *
+ * @param {LevelPluginConfig} config - The experience config to use for the calculations.
+ * @param {LevelRole[]} roles - The roles to use for the calculations.
+ * @param {number} experience - The experience to do the calculation for.
+ */
+
+export function xpToRole(config: LevelPluginConfig, experience: number) {
+	return levelToRole(config, xpToLevel(config, experience));
 }

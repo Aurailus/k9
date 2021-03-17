@@ -31,7 +31,7 @@ export default class VoiceChatPlugin {
 
 		this.client.guilds.cache.forEach(guild => {
 			guild.channels.cache.forEach(channel => {
-				if (channel.type != 'voice') return;
+				if (channel.type !== 'voice') return;
 				if ((channel as Discord.VoiceChannel).members.size >= 1)
 					this.createChatChannel(channel as Discord.VoiceChannel,
 						(channel as Discord.VoiceChannel).members.entries().next().value[1]);
@@ -44,7 +44,7 @@ export default class VoiceChatPlugin {
 		if (oldState.channelID !== null) {
 			let channel = oldState.guild.channels.resolve(oldState.channelID);
 			if (!channel) return;
-			if (channel.members.size == 0 && this.channels[channel.guild.id]) {
+			if (channel.members.size === 0 && this.channels[channel.guild.id]) {
 				oldState.guild.channels.resolve(this.channels[channel.guild.id][channel.id])?.delete();
 				delete this.channels[channel.guild.id][channel.id];
 			}
@@ -53,7 +53,7 @@ export default class VoiceChatPlugin {
 		if (newState.channelID != null) {
 			let channel = newState.guild.channels.resolve(newState.channelID);
 			if (!channel) return;
-			if (!this.channels[channel.guild.id]?.[channel.id] && channel.members.size == 1 && channel.parent)
+			if (!this.channels[channel.guild.id]?.[channel.id] && channel.members.size === 1 && channel.parent)
 				this.createChatChannel(channel as any, newState.member!);
 		}
 	}
