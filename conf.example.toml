@@ -1,0 +1,24 @@
+[auth]
+discord = "DISCORD_BOT_TOKEM"
+mongo_url = "MONGO_DB_URL"
+
+[options]
+status = "YOUR_CUSTOM_STATUS"
+prefix = "BOT_PREFIX"
+delete_triggers = true/false
+
+[plugin.level]
+please_and_thank_you = true/false
+
+[plugin.level.message]
+cooldown = number
+min_length = number
+
+[plugin.level.experience] # https://www.desmos.com/calculator/80hyi0deu6
+a = number
+b = number
+c = number
+
+[[plugin.level.roles]] # bots
+level = number
+role = "YOUR_ROLE_ID"
