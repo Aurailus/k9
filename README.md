@@ -41,37 +41,48 @@ To allow the bot to start, track levels, and give role rewards, fill out `conf.t
 
 ```TOML
 [auth]
-discord = "token" # https://discord.com/developers/applications
-mongo_url = "mongodb_url" # MongoDB URL
+# A Discord Bot token
+discord = "token"
+# MongoDB URL
+mongo_url = "mongodb://host/database" 
 
 [options]
-status = string # Custom status
-prefix = string # Command prefix
-delete_triggers = boolean # Delete commands after execution 
+# Custom status
+status = "Hanging out"
+# Command prefix
+prefix = "/" 
+# Delete commands after execution
+delete_triggers = true  
 
 [plugin.level]
-please_and_thank_you = boolean # Bot responds to "good dog" after ranking up.
+# Bot responds to "good dog" after ranking up.
+please_and_thank_you = false 
 
 [plugin.level.message]
-cooldown = number # Cooldown time
-min_length = number # Minimum message length
+# Cooldown time
+cooldown = 30 
+# Minimum message length
+min_length = 30
 
 [plugin.level.experience] 
 # https://www.desmos.com/calculator/80hyi0deu6
-a = number # First level XP offset.
-b = number # Larger values makes XP / level higher.
-c = number # Larger values make XP / level exponentially higher.
+# First level XP offset.
+a = 15 
+# Larger values makes XP / level higher.
+b = 6.5 
+# Larger values make XP / level exponentially higher.
+c = 1.5 
 
 [[plugin.level.roles]]
-level = 1 # Level to acquire role
-role = string # Role ID
+# Level to acquire role
+level = 1 
+role = "RoleID"
 [[plugin.level.roles]]
 level = 2
-role = string
+role = "RoleID"
 [[plugin.level.roles]]
 level = 5
-role = string
-...
+role = "RoleID"
 ```
 
 ### Contributing
