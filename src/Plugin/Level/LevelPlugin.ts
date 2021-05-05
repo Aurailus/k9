@@ -150,9 +150,12 @@ export default class LevelPlugin {
 				let image = await buildLevelImage(msg.member!.displayName,
 					Calc.xpToLevel(this.config.plugin.level, newUser.experience), msg.author.id);
 				await msg.channel.send('', { files: [ image ] });
-				await fs.unlink(image);
+				setTimeout(() => fs.unlink(image), 5000);
 			}
-			catch (e) { logger.error(e); }
+			catch (e) {
+				await msg.channel.send('@Auri, I fucked up and had an error, ' + e + ' anyway you levelled up yayyy!');
+				logger.error(e);
+			}
 		}
 	}
 
