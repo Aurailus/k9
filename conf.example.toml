@@ -1,24 +1,43 @@
 [auth]
-discord = "DISCORD_BOT_TOKEM"
-mongo_url = "MONGO_DB_URL"
+# A Discord Bot token
+discord = "token"
+# MongoDB URL
+mongo_url = "mongodb://host/database" 
 
 [options]
-status = "YOUR_CUSTOM_STATUS"
-prefix = "BOT_PREFIX"
-delete_triggers = true/false
+# Custom status
+status = "Hanging out"
+# Command prefix
+prefix = "/" 
+# Delete commands after execution
+delete_triggers = true  
 
 [plugin.level]
-please_and_thank_you = true/false
+# Bot responds to "good dog" after ranking up.
+please_and_thank_you = false 
 
 [plugin.level.message]
-cooldown = number
-min_length = number
+# Cooldown time
+cooldown = 30 
+# Minimum message length
+min_length = 30
 
-[plugin.level.experience] # https://www.desmos.com/calculator/80hyi0deu6
-a = number
-b = number
-c = number
+[plugin.level.experience] 
+# https://www.desmos.com/calculator/80hyi0deu6
+# First level XP offset.
+a = 15 
+# Larger values makes XP / level higher.
+b = 6.5 
+# Larger values make XP / level exponentially higher.
+c = 1.5 
 
-[[plugin.level.roles]] # bots
-level = number
-role = "YOUR_ROLE_ID"
+[[plugin.level.roles]]
+# Level to acquire role
+level = 1 
+role = "RoleID"
+[[plugin.level.roles]]
+level = 2
+role = "RoleID"
+[[plugin.level.roles]]
+level = 5
+role = "RoleID"
