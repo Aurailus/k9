@@ -20,7 +20,7 @@
     "discord.js": "^12.5.1",
     "image-to-base64": "^2.1.1",
     "jimp": "^0.16.1",
-    "log4js": "^6.3.0",
+    "log4js": "^6.4.0",
     "mongodb": "^3.6.4",
     "mongoose": "^5.12.0",
     "toml": "^3.0.0",
